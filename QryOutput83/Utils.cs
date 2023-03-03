@@ -11,12 +11,6 @@ namespace QryOutput83
 {
     class Utils
     {
-        //public static String GetPropertyID (PLEXOS7_NET.Core.Solution zip, String property)
-        //{
-        //    var data = zip.GetSamplesToDataTable();
-            
-        //    return null;
-        //}
 
         public static int GetTotalSamples(PLEXOS7_NET.Core.Solution zip)
         {
@@ -37,6 +31,129 @@ namespace QryOutput83
                 nCount++;
             }
             return ids;
+        }
+
+        public static string PeriodEnumToTableName(PeriodEnum period)
+        {
+            switch (period)
+            {
+                case PeriodEnum.Interval:
+                    return "t_period_0";
+                case PeriodEnum.Day:
+                    return "t_period_1";
+                case PeriodEnum.Week:
+                    return "t_period_2";
+                case PeriodEnum.Month:
+                    return "t_period_3";
+                case PeriodEnum.FiscalYear:
+                    return "t_period_4";
+                case PeriodEnum.Custom:
+                    return "t_period_5";
+                case PeriodEnum.Hour:
+                    return "t_period_6";
+                case PeriodEnum.Quarter:
+                    return "t_period_7";
+                case PeriodEnum.Block:
+                    return "t_period_8";
+                default:
+                    return "t_period_0";
+            }
+        }
+
+        public static string PeriodEnumToTableHeader(PeriodEnum period)
+        {
+            switch (period)
+            {
+                case PeriodEnum.Interval:
+                    return "inteval_id";
+                case PeriodEnum.Day:
+                    return "day_id";
+                case PeriodEnum.Week:
+                    return "week_id";
+                case PeriodEnum.Month:
+                    return "month_id";
+                case PeriodEnum.FiscalYear:
+                    return "fiscal_year_id";
+                case PeriodEnum.Custom:
+                    return "interval_id";
+                case PeriodEnum.Hour:
+                    return "hour_id";
+                case PeriodEnum.Quarter:
+                    return "quarter_id";
+                case PeriodEnum.Block:
+                    return "block_id";
+                default:
+                    return "t_period_0";
+            }
+        }
+
+        public static Dictionary<int, string> CreateTableDictionary(PLEXOS7_NET.Core.Solution zip, string tblName, string tblKeyColumn, string tblValueColumn)
+        {
+            Dictionary<int, string> lRet = new Dictionary<int, string>();
+            var data = zip.GetDataTable(tblName, "");
+            foreach (DataRow item in data.Rows)
+            {
+                lRet.Add((int)item[tblKeyColumn], item[tblValueColumn].ToString());
+            }
+            return lRet;
+        }
+
+        public static string[] GetTableContent(PLEXOS7_NET.Core.Solution zip, string tblName)
+        {
+            string tblHeader = "";
+            var data = zip.GetDataTable(tblName, tblHeader);
+            List<string> lVal = new List<string>();
+            string[] headers = data.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
+            lVal.Add(String.Join(",", headers));
+            foreach (DataRow item in data.Rows)
+            {
+                lVal.Add(String.Join(",", item.ItemArray));
+            }
+            return lVal.ToArray();
+        }
+
+        public static string[] GetObjectIds(PLEXOS7_NET.Core.Solution zip)
+        {
+            string strClassId;
+            string strCategoryId;
+            //Create temp Class Map:
+            Dictionary<string, string> mapClass = new Dictionary<string, string>();
+            var data = zip.GetDataTable("t_class", "class_group_id");
+            foreach (DataRow item in data.Rows)
+            {
+                mapClass.Add(item["class_id"].ToString(), item["name"].ToString());
+            }
+
+            //Create temp Category Map:
+            Dictionary<string, string> mapCategory = new Dictionary<string, string>();
+            data = zip.GetDataTable("t_category", "");
+            foreach (DataRow item in data.Rows)
+            {
+                strCategoryId = $"{item["category_id"]},{item["class_id"]}";
+                mapCategory.Add(strCategoryId, item["name"].ToString());
+            }
+
+            //Finally, we create the object list:
+            data = zip.GetDataTable("t_object", "");
+            string[] headers = data.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
+            
+            List<string> lVal = new List<string>();
+            lVal.Add("class_id, category_id, name");
+            
+            foreach (DataRow item in data.Rows)
+            {
+                strClassId = item["class_id"].ToString();
+                strCategoryId = $"{item["category_id"]},{item["class_id"]}";
+                lVal.Add($"{mapClass[strClassId]},{mapCategory[strCategoryId]},{item["name"]}");
+            }
+            return lVal.ToArray();
+        }
+
+        public static string[] GetPeriodIds(PLEXOS7_NET.Core.Solution zip, PeriodEnum period)
+        {
+            string tblName = PeriodEnumToTableName(period);
+            string tblHead = PeriodEnumToTableHeader(period);
+            return GetTableContent(zip, tblName);
         }
 
         public static string[] GetPeriod0Ids(PLEXOS7_NET.Core.Solution zip)
