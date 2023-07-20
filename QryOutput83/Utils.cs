@@ -6,6 +6,9 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Security.Cryptography;
 
 namespace QryOutput83
 {
@@ -138,13 +141,13 @@ namespace QryOutput83
             string[] headers = data.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
             
             List<string> lVal = new List<string>();
-            lVal.Add("class_id, category_id, name");
+            lVal.Add("class_id,category_id,category_name,object_id,object_name");
             
             foreach (DataRow item in data.Rows)
             {
                 strClassId = item["class_id"].ToString();
                 strCategoryId = $"{item["category_id"]},{item["class_id"]}";
-                lVal.Add($"{mapClass[strClassId]},{mapCategory[strCategoryId]},{item["name"]}");
+                lVal.Add($"{mapClass[strClassId]},{item["category_id"]},{mapCategory[strCategoryId]},{item["object_id"]},{item["name"]}");
             }
             return lVal.ToArray();
         }
@@ -186,6 +189,24 @@ namespace QryOutput83
         public static String GetSampleListSansMedia(PLEXOS7_NET.Core.Solution zip)
         {
             return String.Join(",", GetSampleIds(zip).Skip(1));
+        }
+
+        public static String CreateFileName(string phase_id, string collection, string property, string period_id, string sample_list, string aggregation)
+        {
+            string outputFile = $"{phase_id.ToLower()}_{collection.ToLower()}_{property.ToLower()}";
+            if (!period_id.ToLower().Equals("interval",StringComparison.OrdinalIgnoreCase))
+            {
+                outputFile += "_" + period_id.ToLower();
+            }
+            if (sample_list.Contains(","))
+            {
+                outputFile += $"_({sample_list.ToLower()})";
+            }
+            if (!aggregation.Equals("none", StringComparison.OrdinalIgnoreCase))
+            {
+                outputFile += "_" + aggregation.ToLower();
+            }
+            return outputFile + ".csv";
         }
 
         //GENERATOR TEST QUERIES:

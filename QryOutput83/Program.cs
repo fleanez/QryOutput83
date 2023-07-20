@@ -2,6 +2,7 @@
 
 using EETDataFactory;
 using EEUTILITY.Enums;
+using PLEXOSConnect;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -58,6 +59,7 @@ namespace QryOutput83
         private static Dictionary<string, CollectionEnum> mapCollectionEnums = new Dictionary<string, CollectionEnum>();
         private static Dictionary<string, SimulationPhaseEnum> mapPhaseEnums = new Dictionary<string, SimulationPhaseEnum>();
         private static Dictionary<string, PeriodEnum> mapPeriodEnums = new Dictionary<string, PeriodEnum>();
+        private static Dictionary<string, AggregationEnum> mapAggregationEnums = new Dictionary<string, AggregationEnum>();
 
         private static Dictionary<string, int> mapGeneratorsEnums = new Dictionary<string, int>();
         private static Dictionary<string, int> mapBatteriesEnums = new Dictionary<string, int>();
@@ -71,6 +73,8 @@ namespace QryOutput83
         private static Dictionary<string, int> mapWaterwaysEnums = new Dictionary<string, int>();
         private static Dictionary<string, int> mapReserveGeneratorsEnums = new Dictionary<string, int>();
         private static Dictionary<string, int> mapZonesEnums = new Dictionary<string, int>();
+        private static Dictionary<string, int> mapCompaniesEnums = new Dictionary<string, int>();
+        private static Dictionary<string, int> mapCompanyReservesEnums = new Dictionary<string, int>();
 
 
         private static PLEXOS7_NET.Core.Solution InitConnection(string zipFilePath)
@@ -96,6 +100,10 @@ namespace QryOutput83
             mapPeriodEnums.Add("quarter", PeriodEnum.Quarter);
             mapPeriodEnums.Add("fiscal_year", PeriodEnum.FiscalYear);
 
+            mapAggregationEnums.Add("none", AggregationEnum.None);
+            mapAggregationEnums.Add("category", AggregationEnum.Category);
+            mapAggregationEnums.Add("all", AggregationEnum.All);
+
             InitDictCollection();
             InitDictProperty();
         }
@@ -116,6 +124,9 @@ namespace QryOutput83
             mapParentClass.Add(CollectionEnum.SystemWaterways, ClassEnum.System);
             mapParentClass.Add(CollectionEnum.ReserveGenerators, ClassEnum.Reserve);
             mapParentClass.Add(CollectionEnum.SystemZones, ClassEnum.System);
+            mapParentClass.Add(CollectionEnum.SystemCompanies, ClassEnum.System);
+            mapParentClass.Add(CollectionEnum.CompanyReserves, ClassEnum.Company);
+
 
             //Map Child Class:
             mapChildClass.Add(CollectionEnum.SystemGenerators, ClassEnum.Generator);
@@ -130,8 +141,11 @@ namespace QryOutput83
             mapChildClass.Add(CollectionEnum.SystemWaterways, ClassEnum.Waterway);
             mapChildClass.Add(CollectionEnum.ReserveGenerators, ClassEnum.Generator);
             mapChildClass.Add(CollectionEnum.SystemZones, ClassEnum.Zone);
+            mapChildClass.Add(CollectionEnum.SystemCompanies, ClassEnum.Company);
+            mapChildClass.Add(CollectionEnum.CompanyReserves, ClassEnum.Reserve);
 
 
+            //Collections (3 alternatives):
             mapCollectionEnums.Add("generator", CollectionEnum.SystemGenerators);
             mapCollectionEnums.Add("battery", CollectionEnum.SystemBatteries);
             mapCollectionEnums.Add("region", CollectionEnum.SystemRegions);
@@ -144,6 +158,8 @@ namespace QryOutput83
             mapCollectionEnums.Add("waterway", CollectionEnum.SystemWaterways);
             mapCollectionEnums.Add("reserve.generators", CollectionEnum.ReserveGenerators);
             mapCollectionEnums.Add("zone", CollectionEnum.SystemZones);
+            mapCollectionEnums.Add("company", CollectionEnum.SystemCompanies);
+            mapCollectionEnums.Add("company.reserves", CollectionEnum.CompanyReserves);
 
             mapCollectionEnums.Add("generators", CollectionEnum.SystemGenerators);
             mapCollectionEnums.Add("batteries", CollectionEnum.SystemBatteries);
@@ -157,6 +173,8 @@ namespace QryOutput83
             mapCollectionEnums.Add("waterways", CollectionEnum.SystemWaterways);
             mapCollectionEnums.Add("reservegenerators", CollectionEnum.ReserveGenerators);
             mapCollectionEnums.Add("zones", CollectionEnum.SystemZones);
+            mapCollectionEnums.Add("companies", CollectionEnum.SystemCompanies);
+            mapCollectionEnums.Add("companyreserves", CollectionEnum.CompanyReserves);
 
             mapCollectionEnums.Add("systemgenerators", CollectionEnum.SystemGenerators);
             mapCollectionEnums.Add("systembatteries", CollectionEnum.SystemBatteries);
@@ -170,7 +188,10 @@ namespace QryOutput83
             mapCollectionEnums.Add("systemwaterways", CollectionEnum.SystemWaterways);
             //mapCollectionEnums.Add("reservegenerators", CollectionEnum.ReserveGenerators);
             mapCollectionEnums.Add("systemzones", CollectionEnum.SystemZones);
+            mapCollectionEnums.Add("systemcompanies", CollectionEnum.SystemCompanies);
 
+
+            //Map output Enums
             mapOut.Add("generators", mapGeneratorsEnums);
             mapOut.Add("batteries", mapBatteriesEnums);
             mapOut.Add("regions", mapRegionsEnums);
@@ -183,7 +204,10 @@ namespace QryOutput83
             mapOut.Add("waterways", mapWaterwaysEnums);
             mapOut.Add("reservegenerators", mapReserveGeneratorsEnums);
             mapOut.Add("zones", mapZonesEnums);
-            
+            mapOut.Add("companies", mapCompaniesEnums);
+            mapOut.Add("companyreserves", mapCompanyReservesEnums);
+
+
         }
 
         private static void InitDictProperty()
@@ -1071,6 +1095,107 @@ namespace QryOutput83
             mapLinesEnums.Add("y", (int)SystemOutLinesEnum.y);
             mapLinesEnums.Add("z", (int)SystemOutLinesEnum.z);
 
+
+            mapCompaniesEnums.Add("abatement cost", (int)SystemOutCompaniesEnum.AbatementCost);
+            mapCompaniesEnums.Add("annualized build cost", (int)SystemOutCompaniesEnum.AnnualizedBuildCost);
+            mapCompaniesEnums.Add("auxiliary use", (int)SystemOutCompaniesEnum.AuxiliaryUse);
+            mapCompaniesEnums.Add("available capacity", (int)SystemOutCompaniesEnum.AvailableCapacity);
+            mapCompaniesEnums.Add("build cost", (int)SystemOutCompaniesEnum.BuildCost);
+            mapCompaniesEnums.Add("capacity built", (int)SystemOutCompaniesEnum.CapacityBuilt);
+            mapCompaniesEnums.Add("capacity curtailed", (int)SystemOutCompaniesEnum.CapacityCurtailed);
+            mapCompaniesEnums.Add("capacity price", (int)SystemOutCompaniesEnum.CapacityPrice);
+            mapCompaniesEnums.Add("capacity retired", (int)SystemOutCompaniesEnum.CapacityRetired);
+            mapCompaniesEnums.Add("capacity revenue", (int)SystemOutCompaniesEnum.CapacityRevenue);
+            mapCompaniesEnums.Add("constrained off revenue", (int)SystemOutCompaniesEnum.ConstrainedOffRevenue);
+            mapCompaniesEnums.Add("constrained on revenue", (int)SystemOutCompaniesEnum.ConstrainedOnRevenue);
+            mapCompaniesEnums.Add("contract cost", (int)SystemOutCompaniesEnum.ContractCost);
+            mapCompaniesEnums.Add("contract generation", (int)SystemOutCompaniesEnum.ContractGeneration);
+            mapCompaniesEnums.Add("contract load", (int)SystemOutCompaniesEnum.ContractLoad);
+            mapCompaniesEnums.Add("contract revenue", (int)SystemOutCompaniesEnum.ContractRevenue);
+            mapCompaniesEnums.Add("contract settlement", (int)SystemOutCompaniesEnum.ContractSettlement);
+            mapCompaniesEnums.Add("contract volume", (int)SystemOutCompaniesEnum.ContractVolume);
+            mapCompaniesEnums.Add("cost to load", (int)SystemOutCompaniesEnum.CosttoLoad);
+            mapCompaniesEnums.Add("debt cost", (int)SystemOutCompaniesEnum.DebtCost);
+            mapCompaniesEnums.Add("dispatchable capacity", (int)SystemOutCompaniesEnum.DispatchableCapacity);
+            mapCompaniesEnums.Add("emissions cost", (int)SystemOutCompaniesEnum.EmissionsCost);
+            mapCompaniesEnums.Add("equity cost", (int)SystemOutCompaniesEnum.EquityCost);
+            mapCompaniesEnums.Add("fixed costs", (int)SystemOutCompaniesEnum.FixedCosts);
+            mapCompaniesEnums.Add("fixed load generation", (int)SystemOutCompaniesEnum.FixedLoadGeneration);
+            mapCompaniesEnums.Add("fo_m cost", (int)SystemOutCompaniesEnum.FOMCost);
+            mapCompaniesEnums.Add("fuel contract cost", (int)SystemOutCompaniesEnum.FuelContractCost);
+            mapCompaniesEnums.Add("fuel cost", (int)SystemOutCompaniesEnum.FuelCost);
+            mapCompaniesEnums.Add("fuel inventory cost", (int)SystemOutCompaniesEnum.FuelInventoryCost);
+            mapCompaniesEnums.Add("fuel market revenue", (int)SystemOutCompaniesEnum.FuelMarketRevenue);
+            mapCompaniesEnums.Add("fuel offtake", (int)SystemOutCompaniesEnum.FuelOfftake);
+            mapCompaniesEnums.Add("fuel price", (int)SystemOutCompaniesEnum.FuelPrice);
+            mapCompaniesEnums.Add("fuel transition cost", (int)SystemOutCompaniesEnum.FuelTransitionCost);
+            mapCompaniesEnums.Add("fuel transport cost", (int)SystemOutCompaniesEnum.FuelTransportCost);
+            mapCompaniesEnums.Add("gas demand", (int)SystemOutCompaniesEnum.GasDemand);
+            mapCompaniesEnums.Add("gas imbalance", (int)SystemOutCompaniesEnum.GasImbalance);
+            mapCompaniesEnums.Add("gas market revenue", (int)SystemOutCompaniesEnum.GasMarketRevenue);
+            mapCompaniesEnums.Add("gas supply", (int)SystemOutCompaniesEnum.GasSupply);
+            mapCompaniesEnums.Add("generation", (int)SystemOutCompaniesEnum.Generation);
+            mapCompaniesEnums.Add("generation at rrn", (int)SystemOutCompaniesEnum.GenerationatRRN);
+            mapCompaniesEnums.Add("generation cost", (int)SystemOutCompaniesEnum.GenerationCost);
+            mapCompaniesEnums.Add("generator firm capacity", (int)SystemOutCompaniesEnum.GeneratorFirmCapacity);
+            mapCompaniesEnums.Add("generator monopoly rent", (int)SystemOutCompaniesEnum.GeneratorMonopolyRent);
+            mapCompaniesEnums.Add("generator start _ shutdown cost", (int)SystemOutCompaniesEnum.GeneratorStartShutdownCost);
+            mapCompaniesEnums.Add("heat market revenue", (int)SystemOutCompaniesEnum.HeatMarketRevenue);
+            mapCompaniesEnums.Add("installed capacity", (int)SystemOutCompaniesEnum.InstalledCapacity);
+            mapCompaniesEnums.Add("levelized cost", (int)SystemOutCompaniesEnum.LevelizedCost);
+            mapCompaniesEnums.Add("load", (int)SystemOutCompaniesEnum.Load);
+            mapCompaniesEnums.Add("lower reserve", (int)SystemOutCompaniesEnum.LowerReserve);
+            mapCompaniesEnums.Add("min load generation", (int)SystemOutCompaniesEnum.MinLoadGeneration);
+            mapCompaniesEnums.Add("net contract revenue", (int)SystemOutCompaniesEnum.NetContractRevenue);
+            mapCompaniesEnums.Add("net contract settlement", (int)SystemOutCompaniesEnum.NetContractSettlement);
+            mapCompaniesEnums.Add("net contract volume", (int)SystemOutCompaniesEnum.NetContractVolume);
+            mapCompaniesEnums.Add("net cost to load", (int)SystemOutCompaniesEnum.NetCosttoLoad);
+            mapCompaniesEnums.Add("net generation", (int)SystemOutCompaniesEnum.NetGeneration);
+            mapCompaniesEnums.Add("net generation revenue", (int)SystemOutCompaniesEnum.NetGenerationRevenue);
+            mapCompaniesEnums.Add("net load", (int)SystemOutCompaniesEnum.NetLoad);
+            mapCompaniesEnums.Add("net new capacity", (int)SystemOutCompaniesEnum.NetNewCapacity);
+            mapCompaniesEnums.Add("net pool revenue", (int)SystemOutCompaniesEnum.NetPoolRevenue);
+            mapCompaniesEnums.Add("net profit", (int)SystemOutCompaniesEnum.NetProfit);
+            mapCompaniesEnums.Add("net reserves revenue", (int)SystemOutCompaniesEnum.NetReservesRevenue);
+            mapCompaniesEnums.Add("net revenue", (int)SystemOutCompaniesEnum.NetRevenue);
+            mapCompaniesEnums.Add("no cost capacity", (int)SystemOutCompaniesEnum.NoCostCapacity);
+            mapCompaniesEnums.Add("pool revenue", (int)SystemOutCompaniesEnum.PoolRevenue);
+            mapCompaniesEnums.Add("price paid", (int)SystemOutCompaniesEnum.PricePaid);
+            mapCompaniesEnums.Add("price received", (int)SystemOutCompaniesEnum.PriceReceived);
+            mapCompaniesEnums.Add("pump cost", (int)SystemOutCompaniesEnum.PumpCost);
+            mapCompaniesEnums.Add("pump load", (int)SystemOutCompaniesEnum.PumpLoad);
+            mapCompaniesEnums.Add("purchaser load", (int)SystemOutCompaniesEnum.PurchaserLoad);
+            mapCompaniesEnums.Add("raise reserve", (int)SystemOutCompaniesEnum.RaiseReserve);
+            mapCompaniesEnums.Add("regulation lower reserve", (int)SystemOutCompaniesEnum.RegulationLowerReserve);
+            mapCompaniesEnums.Add("regulation raise reserve", (int)SystemOutCompaniesEnum.RegulationRaiseReserve);
+            mapCompaniesEnums.Add("replacement reserve", (int)SystemOutCompaniesEnum.ReplacementReserve);
+            mapCompaniesEnums.Add("reserves cost", (int)SystemOutCompaniesEnum.ReservesCost);
+            mapCompaniesEnums.Add("reserves revenue", (int)SystemOutCompaniesEnum.ReservesRevenue);
+            mapCompaniesEnums.Add("reserves vo_m cost", (int)SystemOutCompaniesEnum.ReservesVOMCost);
+            mapCompaniesEnums.Add("retirement cost", (int)SystemOutCompaniesEnum.RetirementCost);
+            mapCompaniesEnums.Add("shadow capacity built", (int)SystemOutCompaniesEnum.ShadowCapacityBuilt);
+            mapCompaniesEnums.Add("shadow generation", (int)SystemOutCompaniesEnum.ShadowGeneration);
+            mapCompaniesEnums.Add("srmc", (int)SystemOutCompaniesEnum.SRMC);
+            mapCompaniesEnums.Add("start fuel cost", (int)SystemOutCompaniesEnum.StartFuelCost);
+            mapCompaniesEnums.Add("start fuel offtake", (int)SystemOutCompaniesEnum.StartFuelOfftake);
+            mapCompaniesEnums.Add("strategic shadow price", (int)SystemOutCompaniesEnum.StrategicShadowPrice);
+            mapCompaniesEnums.Add("total cost", (int)SystemOutCompaniesEnum.TotalCost);
+            mapCompaniesEnums.Add("total generation cost", (int)SystemOutCompaniesEnum.TotalGenerationCost);
+            mapCompaniesEnums.Add("total system cost", (int)SystemOutCompaniesEnum.TotalSystemCost);
+            mapCompaniesEnums.Add("transmission rental", (int)SystemOutCompaniesEnum.TransmissionRental);
+            mapCompaniesEnums.Add("undispatched capacity", (int)SystemOutCompaniesEnum.UndispatchedCapacity);
+            mapCompaniesEnums.Add("uos cost", (int)SystemOutCompaniesEnum.UoSCost);
+            mapCompaniesEnums.Add("vo_m cost", (int)SystemOutCompaniesEnum.VOMCost);
+            mapCompaniesEnums.Add("waste heat", (int)SystemOutCompaniesEnum.WasteHeat);
+            mapCompaniesEnums.Add("x", (int)SystemOutCompaniesEnum.x);
+            mapCompaniesEnums.Add("y", (int)SystemOutCompaniesEnum.y);
+            mapCompaniesEnums.Add("z", (int)SystemOutCompaniesEnum.z);
+
+
+            mapCompanyReservesEnums.Add("provision", (int)OutCompanyReservesEnum.Provision);
+            mapCompanyReservesEnums.Add("revenue", (int)OutCompanyReservesEnum.Revenue);
+
+
         }
 
         public int GetPropertyId (string collection, string property)
@@ -1079,29 +1204,30 @@ namespace QryOutput83
             return map[property.ToLower()];
         }
 
-        public static SolutionResultList QryToListAllObjects(PLEXOS7_NET.Core.Solution zip, string phase_id, string collection, string period_id, string propertyList, string sSampleList = null)
+        public static SolutionResultList QryToListAllObjects(PLEXOS7_NET.Core.Solution zip, string phase_id, string collection, string period_id, string propertyList, string sSampleList = null, string aggregation = "none")
         {
             var enumphase_id = mapPhaseEnums[phase_id.ToLower()];
             var enumCollection = mapCollectionEnums[collection.ToLower()];
             var enumperiod_id = mapPeriodEnums[period_id.ToLower()];
             var mapPropery = mapOut[collection.ToLower()];
             var enumPropery = mapPropery[propertyList.ToLower()];
+            var enumAggregation = mapAggregationEnums[aggregation.ToLower()];
             return zip.QueryToList(enumphase_id,
               enumCollection,
               "",
               "",
               enumperiod_id,
               SeriesTypeEnum.Properties,
-              "" + enumPropery, null, null, null, sSampleList);
+              "" + enumPropery, null, null, null, sSampleList, null, enumAggregation);
         }
 
         public static void WriteResultListToFile (SolutionResultList results, string csvFilePath, int intervalLength=1 )
         {
             //2--Write to stringbuilder:
             StringBuilder outLines = new StringBuilder();
-            int count = 0;
+            int count = 1;
 
-            outLines.AppendLine("NAME,SAMPLE,DATETIME,VALUE");
+            outLines.AppendLine("PARENT_ID,OBJECT_ID,CATEGORY_ID,SAMPLE,DATETIME,VALUE");
             File.WriteAllText(csvFilePath, outLines.ToString());
             outLines.Clear();
 
@@ -1119,6 +1245,7 @@ namespace QryOutput83
                 {
                     File.AppendAllText(csvFilePath, outLines.ToString());
                     outLines.Clear();
+                    //Console.WriteLine($"Total {count} lines processed already...");
                 }
                 count++;
             }
@@ -1126,6 +1253,7 @@ namespace QryOutput83
             //3--Write to file:
             File.AppendAllText(csvFilePath, outLines.ToString());
             outLines.Clear();
+            //Console.WriteLine($"Finished processing {Path.GetFileName(csvFilePath)} file. Total lines={count}");
 
         }
 
@@ -1237,7 +1365,7 @@ namespace QryOutput83
                 DateTime date = DateTime.Parse(r.date_string);
                 for (int i = 0; i < intervalLength; i++)
                 {
-                    outLines.AppendLine($"{r.child_name},{r.sample_id},{date.AddHours((double)i)},{Math.Round((double)r.value, VALUE_DECIMAL)}");
+                    outLines.AppendLine($"{r.parent_name},{r.child_name},{r.sample_id},{date.AddHours((double)i)},{Math.Round((double)r.value, VALUE_DECIMAL)}");
                 }
             }
             else
@@ -1245,7 +1373,7 @@ namespace QryOutput83
                 for (int i = 0; i < intervalLength; i++)
                 {
                     int nInterval = (r.period_id - 1) * intervalLength + i;
-                    outLines.AppendLine($"{r.child_name},{r.sample_id},{nInterval},{Math.Round((double)r.value, VALUE_DECIMAL)}");
+                    outLines.AppendLine($"{r.parent_name},{r.child_name},{r.sample_id},{nInterval},{Math.Round((double)r.value, VALUE_DECIMAL)}");
                 }
             }
         }
@@ -1254,10 +1382,10 @@ namespace QryOutput83
         {
             if (useDateTimeColumn)
             {
-                outLines.AppendLine($"{r.child_id},{r.category_id},{r.sample_id},{r.date_string},{r.interval_id},{r.value}");
+                outLines.AppendLine($"{r.parent_id},{r.child_id},{r.category_id},{r.sample_id},{r.date_string},{r.interval_id},{Math.Round((double)r.value, VALUE_DECIMAL)}");
             } else
             {
-                outLines.AppendLine($"{r.child_id},{r.category_id},{r.sample_id},{r.interval_id},{r.value}");
+                outLines.AppendLine($"{r.parent_id},{r.child_id},{r.category_id},{r.sample_id},{r.interval_id},{Math.Round((double)r.value, VALUE_DECIMAL)}");
             }
         }
 
@@ -1335,16 +1463,18 @@ namespace QryOutput83
             string period_id;
             int interval_length = 1;
             int samples = -1;
+            string aggregation = "none";
             if (args.Length == 0)
             {
-                Console.WriteLine("qryoutput83.exe [SOURCE_FILE] [DEST_FOLDER] [COLLECTION] [PROPERTY] [INTERVAL] [SAMPLES]");
+                Console.WriteLine("qryoutput83.exe [SOURCE_FILE] [DEST_FOLDER] [COLLECTION] [PROPERTY] [INTERVAL] [SAMPLES] [AGGREGA]");
                 Console.WriteLine("  [SOURCE_FILE] Full path to PLEXOS zip output file (including file name)");
                 Console.WriteLine("  [DEST_FOLDER] Full path to destination folder");
                 Console.WriteLine("  [PHASE] Simulation phase name. Supported values: LTPlan, PASA, MT_Schedule, ST_Schedule");
                 Console.WriteLine("  [COLLECTION] Collection name (do not use System). Eg. Generators, Reserve.Generators");
                 Console.WriteLine("  [PROPERTY] Name of property");
                 Console.WriteLine("  [INTERVAL] (Optional) Horizon interval length in hours");
-                Console.WriteLine("  [SAMPLES] (Optional) Number of samples to be extrated");
+                Console.WriteLine("  [SAMPLES] (Optional) Number of samples to be extrated. Use 0 to especify average. Use -1 to specify all samples");
+                Console.WriteLine("  [AGGREGA] (Optional) Aggregation type. Supported values: none, all, category");
                 return;
             }
             else if (args.Length == 6)
@@ -1377,6 +1507,18 @@ namespace QryOutput83
                 interval_length = int.Parse(args[6]);
                 samples = int.Parse(args[7]);
             }
+            else if (args.Length == 9)
+            {
+                source = args[0];
+                dest = args[1];
+                phase_id = args[2];
+                collection = args[3];
+                property = args[4];
+                period_id = args[5];
+                interval_length = int.Parse(args[6]);
+                samples = int.Parse(args[7]);
+                aggregation = args[8];
+            }
             else
             {
                 Console.WriteLine($"Required arguments not provided. Execute 'queryout83.exe' (with no arguents) for help");
@@ -1386,10 +1528,10 @@ namespace QryOutput83
             //Enum Validation:
             //TODO: We should do the map existance validation here
             InitDictionaries();
-            CollectionEnum collectionEnum = mapCollectionEnums[collection];
+            CollectionEnum collectionEnum = mapCollectionEnums[collection.ToLower()];
             ClassEnum childParentEnum = mapParentClass[collectionEnum];
             ClassEnum childClassEnum = mapChildClass[collectionEnum];
-            PeriodEnum periodEnum = mapPeriodEnums[period_id];
+            PeriodEnum periodEnum = mapPeriodEnums[period_id.ToLower()];
             
             //Initialize connection:
             var zip = InitConnection(source);
@@ -1424,6 +1566,10 @@ namespace QryOutput83
             {
                 sSampleList = Utils.GetSampleListSansMedia(zip);
             }
+            else if (samples == 0)
+            {
+                sSampleList = "0";
+            }
             else
             {
                 int[] sequence = Enumerable.Range(0, samples).ToArray();
@@ -1449,20 +1595,19 @@ namespace QryOutput83
             //nFiles += ExecuteTestQueryToCsv(zip, $"{csvFilePath}/nodepriceinterval.csv", NODEPRICE_PERIOD, "1,2,3,4", nIntervalLength);
             var qryTime = new Stopwatch();
             qryTime.Start();
-            SolutionResultList sol = QryToListAllObjects(zip, phase_id, collection, period_id, property, sSampleList);
+            SolutionResultList sol = QryToListAllObjects(zip, phase_id, collection, period_id, property, sSampleList, aggregation);
             Console.WriteLine($"Finished executing queries. Time: {qryTime.ElapsedMilliseconds / 1000} sec.");
 
             //Write output file:
-            string outputFile = dest + Path.DirectorySeparatorChar + $"{phase_id}_{collection}_{property}.csv";
-            WriteResultListToFile(sol, outputFile);
+            string outputFile = dest + Path.DirectorySeparatorChar + Utils.CreateFileName(phase_id, collection, property, period_id, sSampleList, aggregation);
+            WriteResultListToFile(sol, outputFile, interval_length);
             Console.WriteLine($"Finished writing csv files. Total time: {qryTime.ElapsedMilliseconds / 1000} sec.");
             qryTime.Stop();
             zip.Close();
+#if DEBUG
             Console.ReadKey();
+#endif
         }
-
-
-
 
 
     }
